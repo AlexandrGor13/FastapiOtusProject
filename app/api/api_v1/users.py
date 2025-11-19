@@ -6,7 +6,7 @@ from sqlalchemy.exc import NoResultFound, InterfaceError, IntegrityError
 
 from crud.user import UsersCRUD, users_crud
 from core.schemas.user import User as UserSchema, default_user
-from dependencies.dependencies import get_current_user
+from dependencies.dependencies import get_current_user, get_current_admin
 from crud.profile import ProfileCRUD, profile_crud
 from core.schemas.profile import ProfileRead, default_profile
 
@@ -91,14 +91,14 @@ async def set_user(
     },
 )
 async def about_me(
-    current_user: Annotated[str, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user)],
     crud: Annotated[UsersCRUD, Depends(users_crud)],
 ):
     """
     Этот маршрут защищен и требует токен. Если токен действителен, мы возвращаем информацию о пользователе.
     """
     try:
-        user = await crud.get_by_name(current_user)
+        user = await crud.get_by_name(current_user.get("username"))
     except NoResultFound:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": "User not found"}
@@ -142,7 +142,7 @@ async def about_me(
     },
 )
 async def update_user_info(
-    current_user: Annotated[str, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user)],
     crud: Annotated[UsersCRUD, Depends(users_crud)],
     user_in: Annotated[UserSchema, Body()] = default_user,
 ):
@@ -150,7 +150,7 @@ async def update_user_info(
     Этот маршрут защищен и требует токен. Если токен действителен, мы можем изменить информацию о пользователе.
     """
     try:
-        user = await crud.update(current_user, user_in)
+        user = await crud.update(current_user.get("username"), user_in)
     except NoResultFound:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": "User not found"}
@@ -194,14 +194,14 @@ async def update_user_info(
     },
 )
 async def del_user(
-    current_user: Annotated[str, Depends(get_current_user)],
+    current_user: Annotated[dict, Depends(get_current_user)],
     crud: Annotated[UsersCRUD, Depends(users_crud)],
 ):
     """
     Этот маршрут защищен и требует токен. Если токен действителен, мы можем удалить пользователя.
     """
     try:
-        user = await crud.delete(current_user)
+        user = await crud.delete(current_user.get("username"))
     except NoResultFound:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": "User not found"}
@@ -222,6 +222,7 @@ async def del_user(
 @router.get(
     "/all_users",
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_current_admin)],
 )
 async def all_users(
     crud: Annotated[UsersCRUD, Depends(users_crud)],

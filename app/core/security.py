@@ -10,9 +10,11 @@ if not hasattr(bcrypt, "__about__"):
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def verify_string(one_string: str, other_string: str) -> bool:
     """Функция для проверки, соответствует ли одна строка другой"""
     return secrets.compare_digest(one_string, other_string)
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Функция для проверки, соответствует ли полученный пароль сохраненному хэшу"""
@@ -36,7 +38,3 @@ def create_jwt_token(data: dict):
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     payload.update({"exp": expire})
     return jwt.encode(claims=payload, key=settings.api.secret_key, algorithm="HS256")
-
-
-if __name__ == "__main__":
-    print(get_password_hash("password"))

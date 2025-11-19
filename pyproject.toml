@@ -12,6 +12,7 @@ dependencies = [
     "passlib[bcrypt]>=1.7.4",
     "pydantic-settings>=2.8.1",
     "python-jose>=3.4.0",
+    "redis>=7.1.0",
     "sqladmin[full]>=0.20.1",
     "sqlalchemy[asyncio]>=2.0.40",
 ]

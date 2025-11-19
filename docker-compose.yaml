@@ -35,6 +35,13 @@ services:
     tty: true
     stdin_open: true
 
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redisdata:/data
+
   app:
     build:
       dockerfile: app/Dockerfile
@@ -56,3 +63,4 @@ services:
 
 volumes:
   postgresdata:
+  redisdata:

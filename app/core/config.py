@@ -8,6 +8,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SQLA_PG_ASYNC_ENGINE = "asyncpg"
 
+class RedisConfig(BaseModel):
+    """
+    Setting for Redis
+    """
+    db: int = 0
+    host: str
+    port: int = 6379
 
 class ApiConfig(BaseModel):
     """
@@ -27,7 +34,6 @@ class DatabaseConfig(BaseModel):
     """
     Setting for the PostgreSQL database
     """
-
     name: str
     user: str
     password: str
@@ -64,13 +70,14 @@ class Settings(BaseSettings):
         case_sensitive=False,
         env_nested_delimiter="__",
         env_file=(
-            BASE_DIR / ".env.template",
+            BASE_DIR / ".env.redis",
             BASE_DIR / ".env.db",
             BASE_DIR / ".env.admin",
             BASE_DIR / ".env.api",
         ),
     )
 
+    redis: RedisConfig
     db: DatabaseConfig
     admin: AdminConfig
     api: ApiConfig

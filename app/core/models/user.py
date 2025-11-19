@@ -38,6 +38,6 @@ class User(Base):
 
     @property
     def get_username_password(self) -> dict:
-        return {"username": self.username, "password_hash": self.password_hash}
+        return {"username": self.username, "password_hash": self.password_hash, "role": self.role}
 
 

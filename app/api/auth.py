@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, status, Body, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException
 import logging
 from core.schemas.user import UserAuth
 from core.schemas.token import Token
@@ -32,9 +32,10 @@ def login(
     user_in: Annotated[UserAuth, Depends(auth_user_oath2)],
 ) -> Token:
     """Функция авторизации пользователя. В случае успеха возвращает токен доступа"""
-    token = create_jwt_token({"sub": user_in.username})
+    token = create_jwt_token({"sub": user_in.username, "role": user_in.role})
     token_dict.add_token(token=token, username=user_in.username)
     log.info("Login username %s", user_in.username)
+    print("Login", token_dict.get_token(token))
     return Token(access_token=token, token_type="bearer")
 
 
@@ -56,11 +57,12 @@ def login(
 def logout(token: str = Depends(oauth2_scheme)):
     username = token_dict.del_token(token)
     log.info("Logout username %s", username)
+    print("Logout", token_dict.get_token(token))
     return {"msg": "Successfully logged out"}
 
 
 @router.get("/protected")
 def protected_route(token: str = Depends(oauth2_scheme)):
-    if token not in token_dict.get_tokens():
+    if not token_dict.get_token(token):
         raise HTTPException(status_code=403, detail="Token has been blacklisted")
     return {"msg": "Access granted"}

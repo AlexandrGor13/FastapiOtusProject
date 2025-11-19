@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field, EmailStr
 from typing import Annotated, Optional
 
+from core.models.user import RoleEnum
+
 
 class UserRead(BaseModel):
     username: Annotated[
@@ -28,7 +30,6 @@ class User(UserRead):
 class UserAuth(BaseModel):
     username: Annotated[str, Field()]
     password: Annotated[str, Field()]
-    # password_hash: Annotated[str, Field()]
 
 
 default_user = User(

@@ -69,7 +69,7 @@ class UsersCRUD(UsersItemsCRUD):
         statement = select(UserModel.password_hash).where(UserModel.username == username)
         return (await self.session.scalars(statement)).one()
 
-    async def get_users_and_password(self) -> list:
+    async def get_users_and_passwords(self) -> list:
         users_list = []
         statement = select(UserModel).order_by(UserModel.id)
         users = await self.session.scalars(statement)
@@ -81,7 +81,7 @@ class UsersCRUD(UsersItemsCRUD):
         users_list = []
         statement = select(UserModel).order_by(UserModel.id)
         users = await self.session.scalars(statement)
-        for user in users:
+        for user in users.all():
             users_list.append(user.get_schemas)
         log.info("Get all users")
         return users_list
