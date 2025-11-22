@@ -1,5 +1,5 @@
-from typing import List
-from fastapi import APIRouter, File, UploadFile, status
+from typing import List, Annotated
+from fastapi import APIRouter, File, UploadFile, status, Body
 import io
 from PIL import Image
 import numpy as np
@@ -90,27 +90,29 @@ async def recognize_face(file: UploadFile = File(...)):
         }
     }
 )
-async def compare_faces(files: List[UploadFile]):
+async def compare_faces(
+        file1: UploadFile = File(...),
+        file2: UploadFile = File(...),
+        model_name: Annotated[str, Body(...,
+            description="Model for face recognition. Options: VGG-Face, Facenet, Facenet512, DeepFace, ArcFace"
+        )] = "VGG-Face"
+):
     """
     Сравнивает два загруженных изображения на предмет схожести лиц.
     """
-    if len(files) != 2:
-        return {"error": "Необходимо загрузить ровно два изображения"}
 
     images = []
-    for file in files:
+    for file in file1, file2:
         contents = await file.read()
         img = Image.open(io.BytesIO(contents))
         image_array = np.array(img)
         images.append(image_array)
 
     try:
-        result = DeepFace.verify(images[0], images[1])
-        print(result)
+        result = DeepFace.verify(images[0], images[1], model_name=model_name)
         return {
             "verified": result.get("verified"),
             "distance": result.get("distance"),
-            'model': result.get("model"),
         }
     except Exception as e:
         return {"error": str(e)}
