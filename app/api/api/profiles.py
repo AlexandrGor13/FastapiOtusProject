@@ -6,7 +6,7 @@ from sqlalchemy.exc import NoResultFound, InterfaceError
 
 from crud.profile import ProfileCRUD, profile_crud
 from core.schemas.profile import ProfileRead, default_profile
-from dependencies.dependencies import get_current_user
+from dependencies.dependencies import get_current_user, get_current_admin
 
 router = APIRouter(tags=["Profile"], prefix="/api/users")
 
@@ -112,12 +112,13 @@ async def update_my_profile(
 @router.get(
     "/profiles",
     status_code=status.HTTP_200_OK,
+    dependencies=[Depends(get_current_admin)],
 )
 async def all_profiles(
     crud: Annotated[ProfileCRUD, Depends(profile_crud)],
 ):
     """
-    Этот маршрут защищен и требует токен. Если токен действителен, мы возвращаем информацию о пользователе.
+    Этот маршрут защищен и требует токен администратора. Если токен действителен, мы возвращаем информацию о пользователе.
     """
     try:
         users = await crud.get()

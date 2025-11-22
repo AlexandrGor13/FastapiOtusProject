@@ -1,5 +1,5 @@
 from .auth import router as auth_router
-from .api_v1 import router as api_v1_router
+from .api import router as api_v1_router
 
 from fastapi import APIRouter
 
