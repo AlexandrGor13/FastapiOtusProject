@@ -81,6 +81,7 @@ class Settings(BaseSettings):
     db: DatabaseConfig
     admin: AdminConfig
     api: ApiConfig
+    token_timeout: int = 600
 
 
 # noinspection PyArgumentList

@@ -35,7 +35,6 @@ def login(
     token = create_jwt_token({"sub": user_in.username, "role": user_in.role})
     token_dict.add_token(token=token, username=user_in.username)
     log.info("Login username %s", user_in.username)
-    print("Login", token_dict.get_token(token))
     return Token(access_token=token, token_type="bearer")
 
 
@@ -57,7 +56,6 @@ def login(
 def logout(token: str = Depends(oauth2_scheme)):
     username = token_dict.del_token(token)
     log.info("Logout username %s", username)
-    print("Logout", token_dict.get_token(token))
     return {"msg": "Successfully logged out"}
 
 

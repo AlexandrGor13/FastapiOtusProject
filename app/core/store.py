@@ -21,7 +21,7 @@ class TokenDict:
             raise ConnectionError(f"Failed to connect to Redis server: {e}")
 
     def add_token(self, token: str, username: str):
-        self.connection.set(token, username)
+        self.connection.setex(token, settings.token_timeout * 60, username)
 
     def del_token(self, token):
         self.connection.delete(token)

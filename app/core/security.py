@@ -26,15 +26,12 @@ def get_password_hash(password: str):
     return pwd_context.hash(password)
 
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 600
-
-
 def create_jwt_token(data: dict):
     """
     Функция для создания JWT токена.
     Мы копируем входные данные, добавляем время истечения и кодируем токен.
     """
     payload = data.copy()
-    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.token_timeout)
     payload.update({"exp": expire})
     return jwt.encode(claims=payload, key=settings.api.secret_key, algorithm="HS256")
