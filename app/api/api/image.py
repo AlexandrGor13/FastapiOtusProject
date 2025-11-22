@@ -83,7 +83,6 @@ async def recognize_face(file: UploadFile = File(...)):
                     "example": {
                         "verified": 'true',
                         "distance": 0.516673,
-                        "model": "VGG-Face"
                     }
                 }
             }
