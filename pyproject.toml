@@ -8,24 +8,17 @@ dependencies = [
     "alembic>=1.15.2",
     "asyncpg>=0.30.0",
     "fastapi[all]>=0.115.12",
-    "gdown>=5.2.0",
     "gunicorn>=23.0.0",
-    "lightphe>=0.0.15",
-    "mtcnn>=1.0.0",
-    "pandas>=2.3.3",
     "passlib[bcrypt]>=1.7.4",
     "pydantic-settings>=2.8.1",
     "python-jose>=3.4.0",
     "redis>=7.1.0",
-    "retina-face>=0.0.17",
+    "requests>=2.32.5",
     "sqladmin[full]>=0.20.1",
     "sqlalchemy[asyncio]>=2.0.40",
-    "tf-keras>=2.20.1",
-    "ultralytics>=8.3.231",
 ]
 
 [dependency-groups]
 dev = [
     "black>=25.1.0",
-    "deptry>=0.24.0",
 ]

@@ -30,9 +30,26 @@ services:
   redis:
     image: redis
     ports:
-      - 6379:6379
+      - "6379:6379"
     volumes:
       - redisdata:/data
+
+
+  deepface:
+    build:
+      dockerfile: api_deepface/Dockerfile
+      context: .
+    ports:
+      - "8002:8002"
+
+
+  kandinsky:
+    build:
+      dockerfile: api_kandinsky/Dockerfile
+      context: .
+    ports:
+      - "8001:8001"
+
 
   app:
     build:
