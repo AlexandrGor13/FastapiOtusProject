@@ -1,0 +1,4 @@
+transformers[torch]==4.57.3
+diffusers==0.35.2
+uvicorn==0.38.0
+fastapi==0.122.0
