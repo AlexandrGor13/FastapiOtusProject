@@ -4,7 +4,7 @@ from PIL import Image
 from fastapi import APIRouter, File, UploadFile, status, Form
 from fastapi.responses import StreamingResponse, JSONResponse
 
-from config import pipe, pipe_text, prompt_g, image_emb, zero_image_emb, log
+from config import pipe, log
 
 router = APIRouter()
 
@@ -21,7 +21,7 @@ async def generate_image(prompt: str = Form(...)):
     """
 
     try:
-        image = pipe_text(prompt).images[0]
+        image = pipe(prompt).images[0]
 
         buffer = BytesIO()
         image.save(buffer, format="PNG")
@@ -36,8 +36,8 @@ async def generate_image(prompt: str = Form(...)):
         )
 
 
-@router.post("/generate_avatar/")
-async def generate_avatar(file: UploadFile = File(...)):
+@router.post("/generate_avatar")
+async def generate_avatar(file: UploadFile = File(...), prompt: str = Form(...)):
     """
     Генерирует уникальный аватар по фотографии пользователя и возвращает результат в виде потока байтов.
     """
@@ -46,21 +46,10 @@ async def generate_avatar(file: UploadFile = File(...)):
         img_bytes = await file.read()
         input_image = Image.open(BytesIO(img_bytes))
 
-        image = pipe(
-            prompt_g,
-            image=input_image,
-            image_embeds=image_emb,
-            negative_image_embeds=zero_image_emb,
-            height=768,
-            width=768,
-            num_inference_steps=100,
-            strength=0.2,
-        ).images
-
-        result_image = image[0]
+        image = pipe(prompt, image=input_image).images[0]
 
         output_buffer = BytesIO()
-        result_image.save(output_buffer, format='PNG')
+        image.save(output_buffer, format='PNG')
         output_buffer.seek(0)
 
         return StreamingResponse(output_buffer, media_type="image/png")
