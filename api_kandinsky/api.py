@@ -1,10 +1,11 @@
+from cgitb import strong
 from io import BytesIO
 from PIL import Image
 
 from fastapi import APIRouter, File, UploadFile, status, Form
 from fastapi.responses import StreamingResponse, JSONResponse
 
-from config import pipe, log
+from config import pipe, pipe_prior, pipe_text, log
 
 router = APIRouter()
 
@@ -21,7 +22,10 @@ async def generate_image(prompt: str = Form(...)):
     """
 
     try:
-        image = pipe(prompt).images[0]
+        image = pipe_text(
+            prompt,
+            num_inference_steps=50,
+        ).images[0]
 
         buffer = BytesIO()
         image.save(buffer, format="PNG")
@@ -46,7 +50,16 @@ async def generate_avatar(file: UploadFile = File(...), prompt: str = Form(...))
         img_bytes = await file.read()
         input_image = Image.open(BytesIO(img_bytes))
 
-        image = pipe(prompt, image=input_image).images[0]
+        image_emb, zero_image_emb = pipe_prior(prompt, return_dict=False)
+
+        image = pipe(
+            prompt,
+            image=input_image,
+            image_embeds=image_emb,
+            negative_image_embeds=zero_image_emb,
+            num_inference_steps=120,
+            strength=0.15,
+        ).images[0]
 
         output_buffer = BytesIO()
         image.save(output_buffer, format='PNG')
