@@ -2,6 +2,7 @@ from typing import Annotated
 from io import BytesIO
 from PIL import Image
 import numpy as np
+import requests
 
 from fastapi import APIRouter, File, UploadFile, status, Body, Depends
 from fastapi.responses import JSONResponse
@@ -47,9 +48,15 @@ async def recognize_face(file: UploadFile = File(...)):
     image_array = np.array(img)
 
     try:
+        contents = await file.read()
+        response = requests.post(
+            'http://localhost/count-people',
+            files={'file': (file.filename, contents)}
+        )        
+        json_response = response.json()
+        if len(json_response['data'].get("count people") != 1:
+            raise ValueError('На должно быть одно лицо')
         result = DeepFace.analyze(image_array, actions=('age', 'gender', 'emotion'), detector_backend='yolov8n')
-        if len(result) != 1:
-            raise ValueError('На изображении более одного лица')
         img_age = result[0].get('age')
         img_gender = 'мужчина' if result[0].get('dominant_gender') == 'Man' else 'женщина'
         img_emotion = result[0].get('dominant_emotion')
