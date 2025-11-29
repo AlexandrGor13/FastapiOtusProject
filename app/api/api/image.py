@@ -1,16 +1,13 @@
 import base64
 from typing import Annotated
 from io import BytesIO
-from PIL import Image
-import numpy as np
 import requests
+from click import prompt
 from fastapi import APIRouter, File, UploadFile, status, Body, Form, Depends
 from fastapi.responses import StreamingResponse, JSONResponse
 
-from deepface import DeepFace
-from deepface.modules.detection import extract_faces
-
 from dependencies.dependencies import get_current_user
+from core.config import settings
 
 router = APIRouter(prefix="/image")
 
@@ -41,45 +38,25 @@ async def recognize_face(file: UploadFile = File(...)):
     """
     Определяет возраст, пол и эмоцию лица на изображении.
     """
-    # Загрузка файла
-    contents = await file.read()
-    img = Image.open(BytesIO(contents))
 
-    # Преобразование изображения в массив NumPy
-    image_array = np.array(img)
-
+    image_bytes = await file.read()
     try:
-        result = DeepFace.analyze(image_array, actions=('age', 'gender', 'emotion'), detector_backend='yolov8n')
-        if len(result) != 1:
-            raise ValueError('На изображении более одного лица')
-        img_age = result[0].get('age')
-        img_gender = 'мужчина' if result[0].get('dominant_gender') == 'Man' else 'женщина'
-        img_emotion = result[0].get('dominant_emotion')
-        match img_emotion:
-            case 'angry':
-                img_emotion = 'сердитый'
-            case 'disgust':
-                img_emotion = 'отвращение'
-            case 'fear':
-                img_emotion = 'страх'
-            case 'happy':
-                img_emotion = 'счастливый'
-            case 'sad':
-                img_emotion = 'грустный'
-            case 'surprise':
-                img_emotion = 'удивление'
-            case 'neutral':
-                img_emotion = 'нейтральная'
-        return {
-            "result": f"Возраст: {img_age}, Пол: {img_gender}, Эмоция: {img_emotion}",
-            "age": img_age,
-            "gender": result[0].get('dominant_gender'),
-            "emotion": result[0].get('dominant_emotion'),
-        }
+        response = requests.post(
+            f'http://{settings.api.deepface_host}:{settings.api.deepface_port}/recognize-face',
+            files={'file': (file.filename, image_bytes)}
+        )
+
+        if response.status_code != 200:
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"error": f"Ошибка обработки изображения внешним сервисом ({response.status_code})"},
+            )
+
+        return response.json()
     except Exception as e:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"detail": str(e)},
+            content={"error": str(e)},
         )
 
 
@@ -95,7 +72,7 @@ async def recognize_face(file: UploadFile = File(...)):
             "content": {
                 "application/json": {
                     "example": {
-                        "verified": 'true',
+                        "verified": True,
                         "distance": 0.516673,
                     }
                 }
@@ -115,23 +92,28 @@ async def compare_faces(
     Сравнивает два загруженных изображения на предмет схожести лиц.
     """
 
-    images = []
-    for file in file1, file2:
-        contents = await file.read()
-        img = Image.open(BytesIO(contents))
-        image_array = np.array(img)
-        images.append(image_array)
-
+    image_bytes1 = await file1.read()
+    image_bytes2 = await file2.read()
     try:
-        result = DeepFace.verify(images[0], images[1], model_name=model_name)
-        return {
-            "verified": result.get("verified"),
-            "distance": result.get("distance"),
-        }
+        response = requests.post(
+            f'http://{settings.api.deepface_host}:{settings.api.deepface_port}/compare-faces',
+            files={'file1': (file1.filename, image_bytes1),
+                   'file2': (file2.filename, image_bytes2)
+                   },
+            params={'model_name': model_name}
+        )
+
+        if response.status_code != 200:
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"error": f"Ошибка обработки изображения внешним сервисом ({response.status_code})"},
+            )
+
+        return response.json()
     except Exception as e:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"detail": "Server Error"},
+            content={"error": str(e)},
         )
 
 
@@ -159,18 +141,24 @@ async def count_people(file: UploadFile = File(...)):
     Сравнивает два загруженных изображения на предмет схожести лиц.
     """
 
-    contents = await file.read()
-    img = Image.open(BytesIO(contents))
-    image_array = np.array(img)
+    image_bytes = await file.read()
     try:
-        result = extract_faces(image_array, detector_backend='yolov8n')
-        return {
-            "count people": len(result),
-        }
+        response = requests.post(
+            f'http://{settings.api.deepface_host}:{settings.api.deepface_port}/count-people',
+            files={'file': (file.filename, image_bytes)}
+        )
+
+        if response.status_code != 200:
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"error": f"Ошибка обработки изображения внешним сервисом ({response.status_code})"},
+            )
+
+        return response.json()
     except Exception as e:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"detail": "Server Error"},
+            content={"error": str(e)},
         )
 
 
@@ -181,37 +169,73 @@ async def count_people(file: UploadFile = File(...)):
     tags=["Kandinsky"],
     dependencies=[Depends(get_current_user)],
 )
-async def generate_image(prompt: str = Form(...)):
+async def generate_image(prompt: str = Form(..., max_length=60)):
     """
     Генерирует изображение по текстовым описаниям
     """
 
-    response = requests.post("0.0.0.0:8001/generate_image", json={"prompt": prompt})
-    response.raise_for_status()  # Проверка статуса ответа
-    data = response.json()
-    encoded_data = data["image"]
-    decoded_data = base64.b64decode(encoded_data)
+    try:
+        response = requests.post(
+            f'http://{settings.api.kandinsky_host}:{settings.api.kandinsky_port}/generate_image',
+            data={"prompt": prompt},
+            timeout=(5, 2000),
+            stream=True
+        )
+        response.raise_for_status()
+        if response.status_code == 200:
+            buffer = BytesIO()
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    buffer.write(chunk)
+            buffer.seek(0)
+            return StreamingResponse(buffer, media_type="image/png")
+        else:
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"error": f"Ошибка обработки изображения внешним сервисом ({response.status_code})"},
+            )
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"error": str(e)},
+        )
 
-    image = BytesIO(decoded_data)
+@router.post(
+    "/generate_avatar",
+    status_code=status.HTTP_200_OK,
+    summary="Generate avatar",
+    tags=["Kandinsky"],
+)
+async def generate_avatar(file: UploadFile = File(...)):
+    """
+    Генерирует уникальный аватар по фотографии пользователя и возвращает результат в виде потока байтов.
+    """
 
-    # return {
-    #     "generated_avatar": base64.b64encode(decoded_data).decode('utf-8'),
-    #     "mime_type": "image/jpeg",
-    # }
-
-    return StreamingResponse(image, media_type="image/png")
-
-
-    # try:
-    #     image = pipe(prompt).images[0]
-    #
-    #     buffer = BytesIO()
-    #     image.save(buffer, format="PNG")
-    #     buffer.seek(0)
-    #
-    #     return StreamingResponse(buffer, media_type="image/png")
-    # except Exception as e:
-    #     return JSONResponse(
-    #         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         content={"detail": "Server Error"},
-    #     )
+    prompt = "стиль 3dmax, уникальный, выразительный"
+    image_bytes = await file.read()
+    try:
+        response = requests.post(
+            f'http://{settings.api.kandinsky_host}:{settings.api.kandinsky_port}/generate_avatar',
+            files={'file': (file.filename, image_bytes)},
+            data={"prompt": prompt},
+            timeout=(5, 2000),
+            stream=True
+        )
+        response.raise_for_status()
+        if response.status_code == 200:
+            buffer = BytesIO()
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    buffer.write(chunk)
+            buffer.seek(0)
+            return StreamingResponse(buffer, media_type="image/png")
+        else:
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"error": f"Ошибка обработки изображения внешним сервисом ({response.status_code})"},
+            )
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"error": str(e)},
+        )

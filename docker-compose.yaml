@@ -6,18 +6,8 @@ services:
       POSTGRES_USER: ${DB__USER}
       POSTGRES_PASSWORD: ${DB__PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - "5432:5432"
     volumes:
       - postgresdata:/var/lib/postgresql/data/pgdata
-    command: >
-      postgres -c max_connections=1000
-               -c shared_buffers=256MB
-               -c effective_cache_size=768MB
-               -c maintenance_work_mem=64MB
-               -c checkpoint_completion_target=0.7
-               -c wal_buffers=16MB
-               -c default_statistics_target=100
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d $${DB__NAME} -U $${DB__USER}" ]
       interval: 30s
@@ -27,26 +17,25 @@ services:
     tty: true
     stdin_open: true
 
+
   redis:
     image: redis
-    ports:
-      - "6379:6379"
     volumes:
       - redisdata:/data
 
 
   deepface:
     build:
-      dockerfile: api_deepface/Dockerfile
-      context: .
+      dockerfile: Dockerfile
+      context: ./api_deepface
     ports:
       - "8002:8002"
 
 
   kandinsky:
     build:
-      dockerfile: api_kandinsky/Dockerfile
-      context: .
+      dockerfile: Dockerfile
+      context: ./api_kandinsky
     ports:
       - "8001:8001"
 
@@ -67,6 +56,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
+      redis:
+        condition: service_started
       pg:
         condition: service_healthy
 

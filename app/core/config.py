@@ -21,6 +21,10 @@ class ApiConfig(BaseModel):
     Setting for the API
     """
     secret_key: str
+    kandinsky_host: str
+    kandinsky_port: int = 8001
+    deepface_host: str
+    deepface_port: int = 8002
 
 class AdminConfig(BaseModel):
     """
