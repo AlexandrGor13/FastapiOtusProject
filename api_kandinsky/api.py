@@ -18,7 +18,7 @@ router = APIRouter()
 )
 async def generate_image(prompt: str = Form(...)):
     """
-    Генерирует изображение по текстовым описаниям
+    Генерирует изображение по описанию.
     """
 
     try:
@@ -40,7 +40,12 @@ async def generate_image(prompt: str = Form(...)):
         )
 
 
-@router.post("/generate_avatar")
+@router.post(
+    "/generate_avatar",
+    status_code=status.HTTP_200_OK,
+    summary="Generate avatar",
+    tags=["Kandinsky"],
+)
 async def generate_avatar(file: UploadFile = File(...), prompt: str = Form(...)):
     """
     Генерирует уникальный аватар по фотографии пользователя и возвращает результат в виде потока байтов.
@@ -49,6 +54,7 @@ async def generate_avatar(file: UploadFile = File(...), prompt: str = Form(...))
     try:
         img_bytes = await file.read()
         input_image = Image.open(BytesIO(img_bytes))
+        input_image.thumbnail((768, 768))
 
         image_emb, zero_image_emb = pipe_prior(prompt, return_dict=False)
 
@@ -57,6 +63,8 @@ async def generate_avatar(file: UploadFile = File(...), prompt: str = Form(...))
             image=input_image,
             image_embeds=image_emb,
             negative_image_embeds=zero_image_emb,
+            height=768,
+            width=768,
             num_inference_steps=120,
             strength=0.15,
         ).images[0]
