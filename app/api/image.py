@@ -1,8 +1,6 @@
-import base64
 from typing import Annotated
 from io import BytesIO
 import requests
-from click import prompt
 from fastapi import APIRouter, File, UploadFile, status, Body, Form, Depends
 from fastapi.responses import StreamingResponse, JSONResponse
 
@@ -11,6 +9,10 @@ from core.config import settings
 
 router = APIRouter(prefix="/image")
 
+ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
+
+def allowed_file(filename: str) -> bool:
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @router.post(
     "/recognize-face",
@@ -38,9 +40,16 @@ async def recognize_face(file: UploadFile = File(...)):
     """
     Определяет возраст, пол и эмоцию лица на изображении.
     """
-
-    image_bytes = await file.read()
-    try:
+    if not allowed_file(file.filename):
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "error": f"Неверное расширение файла {file.filename}. "
+                             f"Допустимые расширения {list(ALLOWED_EXTENSIONS)}"},
+            )
+    try:   
+        image_bytes = await file.read()
+        
         response = requests.post(
             f'http://{settings.api.deepface_host}:{settings.api.deepface_port}/recognize-face',
             files={'file': (file.filename, image_bytes)}
@@ -91,10 +100,17 @@ async def compare_faces(
     """
     Сравнивает два загруженных изображения на предмет схожести лиц.
     """
-
-    image_bytes1 = await file1.read()
-    image_bytes2 = await file2.read()
+    
+    if not allowed_file(file1.filename) and not allowed_file(file2.filename):
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "error": f"Неверное расширение файлов {file1.filename} или {file2.filename}. "
+                             f"Допустимые расширения {list(ALLOWED_EXTENSIONS)}"},
+            )    
     try:
+        image_bytes1 = await file1.read()
+        image_bytes2 = await file2.read()
         response = requests.post(
             f'http://{settings.api.deepface_host}:{settings.api.deepface_port}/compare-faces',
             files={'file1': (file1.filename, image_bytes1),
@@ -140,9 +156,16 @@ async def count_people(file: UploadFile = File(...)):
     """
     Сравнивает два загруженных изображения на предмет схожести лиц.
     """
-
-    image_bytes = await file.read()
+    
+    if not allowed_file(file.filename):
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "error": f"Неверное расширение файла {file.filename}. "
+                             f"Допустимые расширения {list(ALLOWED_EXTENSIONS)}"},
+            )     
     try:
+        image_bytes = await file.read()
         response = requests.post(
             f'http://{settings.api.deepface_host}:{settings.api.deepface_port}/count-people',
             files={'file': (file.filename, image_bytes)}
@@ -171,14 +194,13 @@ async def count_people(file: UploadFile = File(...)):
 )
 async def generate_image(prompt: str = Form(..., max_length=60)):
     """
-    Генерирует изображение по текстовым описаниям
+    Генерирует изображение по описанию.
     """
 
     try:
         response = requests.post(
             f'http://{settings.api.kandinsky_host}:{settings.api.kandinsky_port}/generate_image',
             data={"prompt": prompt},
-            timeout=(5, 2000),
             stream=True
         )
         response.raise_for_status()
@@ -210,15 +232,22 @@ async def generate_avatar(file: UploadFile = File(...)):
     """
     Генерирует уникальный аватар по фотографии пользователя и возвращает результат в виде потока байтов.
     """
+    
+    if not allowed_file(file.filename):
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={
+                    "error": f"Неверное расширение файла {file.filename}. "
+                             f"Допустимые расширения {list(ALLOWED_EXTENSIONS)}"},
+            )
 
-    prompt = "стиль 3dmax, уникальный, выразительный"
-    image_bytes = await file.read()
+    prompt = "стиль анимации, уникальный, добрый"
     try:
+        image_bytes = await file.read()
         response = requests.post(
             f'http://{settings.api.kandinsky_host}:{settings.api.kandinsky_port}/generate_avatar',
             files={'file': (file.filename, image_bytes)},
             data={"prompt": prompt},
-            timeout=(5, 2000),
             stream=True
         )
         response.raise_for_status()
