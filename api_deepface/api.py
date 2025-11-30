@@ -40,22 +40,16 @@ async def recognize_face(file: UploadFile = File(...)):
     """
     Определяет возраст, пол и эмоцию лица на изображении.
     """
-    # Загрузка файла
-    contents = await file.read()
-    img = Image.open(BytesIO(contents))
-
-    # Преобразование изображения в массив NumPy
-    image_array = np.array(img)
 
     try:
         contents = await file.read()
-        response = requests.post(
-            'http://localhost/count-people',
-            files={'file': (file.filename, contents)}
-        )        
-        json_response = response.json()
-        if len(json_response['data'].get("count people") != 1:
-            raise ValueError('На должно быть одно лицо')
+        img = Image.open(BytesIO(contents))
+        image_array = np.array(img)
+
+        faces = extract_faces(image_array, detector_backend='yolov8n')
+        if len(faces) != 1:
+            raise ValueError('На изображении должно быть одно лицо')
+
         result = DeepFace.analyze(image_array, actions=('age', 'gender', 'emotion'), detector_backend='yolov8n')
         img_age = result[0].get('age')
         img_gender = 'мужчина' if result[0].get('dominant_gender') == 'Man' else 'женщина'
@@ -120,14 +114,16 @@ async def compare_faces(
     Сравнивает два загруженных изображения на предмет схожести лиц.
     """
 
-    images = []
-    for file in file1, file2:
-        contents = await file.read()
-        img = Image.open(BytesIO(contents))
-        image_array = np.array(img)
-        images.append(image_array)
-
     try:
+        images = []
+        for file in file1, file2:
+            contents = await file.read()
+            img = Image.open(BytesIO(contents))
+            image_array = np.array(img)
+            faces = extract_faces(image_array, detector_backend='yolov8n')
+            if len(faces) != 1:
+                raise ValueError('На изображении должно быть одно лицо')
+            images.append(image_array)
         result = DeepFace.verify(images[0], images[1], model_name=model_name)
         return {
             "verified": result.get("verified"),
@@ -137,7 +133,7 @@ async def compare_faces(
         log.error("An exception occurred: %s", str(e))
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"detail": "Server Error"},
+            content={"detail": str(e)},
         )
 
 
@@ -164,10 +160,10 @@ async def count_people(file: UploadFile = File(...)):
     Сравнивает два загруженных изображения на предмет схожести лиц.
     """
 
-    contents = await file.read()
-    img = Image.open(BytesIO(contents))
-    image_array = np.array(img)
     try:
+        contents = await file.read()
+        img = Image.open(BytesIO(contents))
+        image_array = np.array(img)
         result = extract_faces(image_array, detector_backend='yolov8n')
         return {
             "count people": len(result),
@@ -176,5 +172,5 @@ async def count_people(file: UploadFile = File(...)):
         log.error("An exception occurred: %s", str(e))
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"detail": "Server Error"},
+            content={"detail": str(e)},
         )

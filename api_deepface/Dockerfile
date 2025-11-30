@@ -18,7 +18,6 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY ./ ./
 
-RUN chmod +x get_models.sh
-RUN ./get_models.sh
+RUN chmod +x ./get_models.sh && ./get_models.sh
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8002"]

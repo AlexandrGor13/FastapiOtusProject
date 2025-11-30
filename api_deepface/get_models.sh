@@ -1,13 +1,13 @@
-#!/bin/bash
+#!/bin/sh
 
 model_path=/root/.deepface/weights
+source_path=./deepface_models
 deepface_path="https://github.com/serengil/deepface_models/releases/download/v1.0"
 
-# Проверяем наличие директории deepface_models
-if test -d "./deepface_models1"; then
-    cp -r "./deepface_models/" "$model_path"
+mkdir -p -m 755 "$model_path"
+if test -d "$source_path"; then
+    mv "$source_path"/* "$model_path"
 else
-    mkdir -p -m 755 "$model_path"
     wget "$deepface_path"/age_model_weights.h5 -O "$model_path"/age_model_weights.h5 && \
     wget "$deepface_path"/arcface_weights.h5 -O "$model_path"/arcface_weights.h5 && \
     wget "$deepface_path"/facenet_weights.h5 -O "$model_path"/facenet_weights.h5 && \
