@@ -47,6 +47,8 @@ services:
     command:
       - gunicorn
       - main:app
+      - --timeout
+      - "2000"
       - --workers
       - "2"
       - --worker-class

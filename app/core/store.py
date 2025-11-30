@@ -18,7 +18,7 @@ class TokenDict:
             connection.ping()  # проверяем доступность сервера
             self.connection = connection
         except Exception as e:
-            raise ConnectionError(f"Failed to connect to Redis server: {e}")
+            raise ConnectionError(f"Failed to connect to Redis server: {str(e)}")
 
     def add_token(self, token: str, username: str):
         self.connection.setex(token, settings.token_timeout * 60, username)

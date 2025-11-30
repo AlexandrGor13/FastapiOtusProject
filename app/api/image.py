@@ -11,8 +11,10 @@ router = APIRouter(prefix="/image")
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 
+
 def allowed_file(filename: str) -> bool:
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @router.post(
     "/recognize-face",
@@ -41,15 +43,15 @@ async def recognize_face(file: UploadFile = File(...)):
     Определяет возраст, пол и эмоцию лица на изображении.
     """
     if not allowed_file(file.filename):
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={
-                    "error": f"Неверное расширение файла {file.filename}. "
-                             f"Допустимые расширения {list(ALLOWED_EXTENSIONS)}"},
-            )
-    try:   
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": f"Неверное расширение файла '{file.filename}'. "
+                         f"Допустимые расширения {list(ALLOWED_EXTENSIONS)}"},
+        )
+    try:
         image_bytes = await file.read()
-        
+
         response = requests.post(
             f'http://{settings.api.deepface_host}:{settings.api.deepface_port}/recognize-face',
             files={'file': (file.filename, image_bytes)}
@@ -100,14 +102,14 @@ async def compare_faces(
     """
     Сравнивает два загруженных изображения на предмет схожести лиц.
     """
-    
+
     if not allowed_file(file1.filename) and not allowed_file(file2.filename):
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={
-                    "error": f"Неверное расширение файлов {file1.filename} или {file2.filename}. "
-                             f"Допустимые расширения {list(ALLOWED_EXTENSIONS)}"},
-            )    
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": f"Неверное расширение файлов '{file1.filename}' или '{file2.filename}'. "
+                         f"Допустимые расширения {list(ALLOWED_EXTENSIONS)}"},
+        )
     try:
         image_bytes1 = await file1.read()
         image_bytes2 = await file2.read()
@@ -156,14 +158,14 @@ async def count_people(file: UploadFile = File(...)):
     """
     Сравнивает два загруженных изображения на предмет схожести лиц.
     """
-    
+
     if not allowed_file(file.filename):
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={
-                    "error": f"Неверное расширение файла {file.filename}. "
-                             f"Допустимые расширения {list(ALLOWED_EXTENSIONS)}"},
-            )     
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": f"Неверное расширение файла '{file.filename}'. "
+                         f"Допустимые расширения {list(ALLOWED_EXTENSIONS)}"},
+        )
     try:
         image_bytes = await file.read()
         response = requests.post(
@@ -222,24 +224,26 @@ async def generate_image(prompt: str = Form(..., max_length=60)):
             content={"error": str(e)},
         )
 
+
 @router.post(
     "/generate_avatar",
     status_code=status.HTTP_200_OK,
     summary="Generate avatar",
     tags=["Kandinsky"],
+    dependencies=[Depends(get_current_user)],
 )
 async def generate_avatar(file: UploadFile = File(...)):
     """
     Генерирует уникальный аватар по фотографии пользователя и возвращает результат в виде потока байтов.
     """
-    
+
     if not allowed_file(file.filename):
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={
-                    "error": f"Неверное расширение файла {file.filename}. "
-                             f"Допустимые расширения {list(ALLOWED_EXTENSIONS)}"},
-            )
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "error": f"Неверное расширение файла '{file.filename}'. "
+                         f"Допустимые расширения {list(ALLOWED_EXTENSIONS)}"},
+        )
 
     prompt = "стиль анимации, уникальный, добрый"
     try:

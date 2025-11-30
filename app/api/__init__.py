@@ -1,7 +1,7 @@
-from auth import router as auth_router
-from api.users import router as users_router
-from api.profiles import router as profile_router
-from api.image import router as image_router
+from .auth import router as auth_router
+from .users import router as users_router
+from .profiles import router as profile_router
+from .image import router as image_router
 
 from fastapi import APIRouter
 
