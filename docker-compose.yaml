@@ -8,8 +8,6 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgresdata:/var/lib/postgresql/data/pgdata
-    expose:
-      - ${DB__PORT}
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d $${DB__NAME} -U $${DB__USER}" ]
       interval: 30s
@@ -24,8 +22,6 @@ services:
     image: redis
     volumes:
       - redisdata:/data
-    expose:
-      - ${REDIS__PORT}
 
 
   deepface:
