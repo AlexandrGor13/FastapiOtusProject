@@ -3,10 +3,10 @@ from pathlib import Path
 from pydantic import BaseModel, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SQLA_PG_ASYNC_ENGINE = "asyncpg"
+
 
 class RedisConfig(BaseModel):
     """
@@ -15,6 +15,7 @@ class RedisConfig(BaseModel):
     db: int = 0
     host: str
     port: int = 6379
+
 
 class ApiConfig(BaseModel):
     """
@@ -25,6 +26,7 @@ class ApiConfig(BaseModel):
     kandinsky_port: int = 8001
     deepface_host: str
     deepface_port: int = 8002
+
 
 class AdminConfig(BaseModel):
     """
@@ -69,7 +71,6 @@ class DatabaseConfig(BaseModel):
 
 
 class Settings(BaseSettings):
-
     model_config = SettingsConfigDict(
         case_sensitive=False,
         env_nested_delimiter="__",
@@ -89,4 +90,4 @@ class Settings(BaseSettings):
 
 
 # noinspection PyArgumentList
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]

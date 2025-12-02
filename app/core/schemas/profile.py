@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field, EmailStr, field_validator
-from typing import Annotated, Optional
+from pydantic import BaseModel, Field
+from typing import Annotated
 
 
 class ProfileRead(BaseModel):

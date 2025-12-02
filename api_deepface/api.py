@@ -2,9 +2,8 @@ from typing import Annotated
 from io import BytesIO
 from PIL import Image
 import numpy as np
-import requests
 
-from fastapi import APIRouter, File, UploadFile, status, Body, Depends
+from fastapi import APIRouter, File, UploadFile, status, Body
 from fastapi.responses import JSONResponse
 
 from deepface import DeepFace

@@ -31,7 +31,9 @@ log = logging.getLogger(__name__)
 def login(
     user_in: Annotated[UserAuth, Depends(auth_user_oath2)],
 ) -> Token:
-    """Функция авторизации пользователя. В случае успеха возвращает токен доступа"""
+    """
+    Авторизация пользователя. В случае успеха возвращает токен доступа
+    """
     token = create_jwt_token({"sub": user_in.username, "role": user_in.role})
     token_dict.add_token(token=token, username=user_in.username)
     log.info("Login username %s", user_in.username)
@@ -54,6 +56,9 @@ def login(
     },
 )
 def logout(token: str = Depends(oauth2_scheme)):
+    """
+    Выход из авторизации.
+    """
     username = token_dict.del_token(token)
     log.info("Logout username %s", username)
     return {"msg": "Successfully logged out"}
@@ -61,6 +66,9 @@ def logout(token: str = Depends(oauth2_scheme)):
 
 @router.get("/protected")
 def protected_route(token: str = Depends(oauth2_scheme)):
+    """
+    Проверка токена на доступ к ресурсу.
+    """
     if not token_dict.get_token(token):
         raise HTTPException(status_code=403, detail="Token has been blacklisted")
     return {"msg": "Access granted"}

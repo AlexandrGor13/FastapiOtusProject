@@ -1,4 +1,3 @@
-from cgitb import strong
 from io import BytesIO
 from PIL import Image
 

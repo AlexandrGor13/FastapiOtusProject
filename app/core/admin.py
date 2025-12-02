@@ -27,11 +27,11 @@ def create_admin_panel(app: FastAPI):
     admin.add_view(ProfileAdmin)
 
 
-class UserAdmin(ModelView, model=User):
+class UserAdmin(ModelView, model=User):  # type: ignore[call-arg]
     column_list = User.get_columns()
 
 
-class ProfileAdmin(ModelView, model=Profile):
+class ProfileAdmin(ModelView, model=Profile):  # type: ignore[call-arg]
     column_list = Profile.get_columns()
 
 

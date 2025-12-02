@@ -12,35 +12,10 @@ from core.config import settings
 from core.store import token_dict
 from crud.user import UsersCRUD, users_crud
 
+
 log = logging.getLogger(__name__)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
-
-
-# class TokenDict:
-#     def __init__(self):
-#         self.token_dict = {}
-#
-#     def add_token(self, token: str, username: str):
-#         self.token_dict[username] = token
-#
-#     def del_token(self, token):
-#         for k, v in self.token_dict.items():
-#             if token == v:
-#                 del self.token_dict[k]
-#                 return k
-#         else:
-#             return None
-#
-#     def get_tokens(self):
-#         return list(self.token_dict.values())
-#
-#     def get_users(self):
-#         return list(self.token_dict.keys())
-#
-#
-# token_dict = TokenDict()
-
 
 async def auth_user_oath2(
         credentials: Annotated[UserAuth, Form()],
@@ -77,7 +52,7 @@ def get_current_user(credentials: Annotated[str, Depends(oauth2_scheme)]):
                 detail="Unable to validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        if not username in token_dict.get_token(credentials):
+        if username not in token_dict.get_token(credentials):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token",
