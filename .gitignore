@@ -1,7 +1,3 @@
 .venv
 .idea
-/app/.env.admin
-/app/.env.db
-/app/.env.api
-/app/.env.redis
 .env

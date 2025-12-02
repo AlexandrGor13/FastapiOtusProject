@@ -1,2 +1,6 @@
 README.md
 /app/.env.template
+.github
+.pre-commit-config.yaml
+.env.template
+Makefile

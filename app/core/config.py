@@ -12,6 +12,7 @@ class RedisConfig(BaseModel):
     """
     Setting for Redis
     """
+
     db: int = 0
     host: str
     port: int = 6379
@@ -21,6 +22,7 @@ class ApiConfig(BaseModel):
     """
     Setting for the API
     """
+
     secret_key: str
     kandinsky_host: str
     kandinsky_port: int = 8001
@@ -32,6 +34,7 @@ class AdminConfig(BaseModel):
     """
     Setting for the AdminPanel
     """
+
     user: str
     password: str
 
@@ -40,6 +43,7 @@ class DatabaseConfig(BaseModel):
     """
     Setting for the PostgreSQL database
     """
+
     name: str
     user: str
     password: str
@@ -72,14 +76,7 @@ class DatabaseConfig(BaseModel):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        case_sensitive=False,
-        env_nested_delimiter="__",
-        env_file=(
-            BASE_DIR / ".env.redis",
-            BASE_DIR / ".env.db",
-            BASE_DIR / ".env.admin",
-            BASE_DIR / ".env.api",
-        ),
+        case_sensitive=False, env_nested_delimiter="__", env_file=(BASE_DIR / ".env")
     )
 
     redis: RedisConfig
