@@ -26,9 +26,9 @@ class ProfileCRUD(UsersItemsCRUD):
         self.session.add(profile)
         profile_out = profile.get_schemas
         await self.session.commit()
-        return profile_out
+        return Profile(**profile_out)
 
-    async def update(self, current_user: str, profile_in: ProfileRead) -> Profile:
+    async def update(self, current_user: str, profile_in: ProfileRead) -> ProfileRead:
         params = profile_in.model_dump()
         default_params = default_profile.model_dump()
         params = {k: w for k, w in params.items() if default_params[k] != w}
@@ -41,12 +41,12 @@ class ProfileCRUD(UsersItemsCRUD):
         profile_out = await self.get_by_name(current_user)
         return profile_out
 
-    async def get_by_name(self, username: str) -> Profile:
+    async def get_by_name(self, username: str) -> ProfileRead:
         statement = (
             select(ProfileModel).join(UserModel).where(UserModel.username == username)
         )
         profile_out = (await self.session.scalars(statement)).one().get_schemas
-        return profile_out
+        return ProfileRead(**profile_out)
 
     async def get(self) -> list:
         profile_list = []

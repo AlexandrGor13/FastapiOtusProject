@@ -36,14 +36,14 @@ router = APIRouter(tags=["Profile"], prefix="/api/users")
     },
 )
 async def my_profile(
-        current_user: Annotated[str, Depends(get_current_user)],
-        crud: Annotated[ProfileCRUD, Depends(profile_crud)],
+    current_user: Annotated[dict, Depends(get_current_user)],
+    crud: Annotated[ProfileCRUD, Depends(profile_crud)],
 ):
     """
     Этот маршрут защищен и требует токен. Если токен действителен, мы возвращаем профиль пользователя.
     """
     try:
-        profile = await crud.get_by_name(current_user)
+        profile = await crud.get_by_name(current_user.get("username"))
     except NoResultFound:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": "User not found"}
@@ -85,15 +85,15 @@ async def my_profile(
     },
 )
 async def update_my_profile(
-        current_user: Annotated[str, Depends(get_current_user)],
-        crud: Annotated[ProfileCRUD, Depends(profile_crud)],
-        profile_in: Annotated[ProfileRead, Body()] = default_profile,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    crud: Annotated[ProfileCRUD, Depends(profile_crud)],
+    profile_in: Annotated[ProfileRead, Body()] = default_profile,
 ):
     """
     Этот маршрут защищен и требует токен. Если токен действителен, мы можем изменить профиль пользователя.
     """
     try:
-        profile = await crud.update(current_user, profile_in)
+        profile = await crud.update(current_user.get("username"), profile_in)
     except NoResultFound:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": "User not found"}
@@ -115,7 +115,7 @@ async def update_my_profile(
     dependencies=[Depends(get_current_admin)],
 )
 async def all_profiles(
-        crud: Annotated[ProfileCRUD, Depends(profile_crud)],
+    crud: Annotated[ProfileCRUD, Depends(profile_crud)],
 ):
     """
     Этот маршрут защищен и требует токен администратора. Если токен действителен, мы возвращаем профили всех пользователей.

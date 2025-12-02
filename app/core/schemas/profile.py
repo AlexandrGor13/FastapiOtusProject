@@ -18,12 +18,6 @@ class ProfileRead(BaseModel):
         ),
     ]
 
-    # @field_validator('phone')
-    # @classmethod
-    # def check_valid_phone(cls, phone: str):
-    #     if not (phone[1:].isdigit() and phone[0] == '+'):
-    #         raise ValueError('Неправильный ввод.')
-
 
 class Profile(ProfileRead):
     user_id: Annotated[int, Field()]
