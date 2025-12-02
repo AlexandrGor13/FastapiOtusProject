@@ -1,7 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr
-from typing import Annotated, Optional
-
-from core.models.user import RoleEnum
+from typing import Annotated
 
 
 class UserRead(BaseModel):

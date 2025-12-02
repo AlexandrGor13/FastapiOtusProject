@@ -220,7 +220,7 @@ async def del_user(
 
 
 @router.get(
-    "/all_users",
+    "/",
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(get_current_admin)],
 )
@@ -228,7 +228,8 @@ async def all_users(
     crud: Annotated[UsersCRUD, Depends(users_crud)],
 ):
     """
-    Этот маршрут защищен и требует токен администратора. Если токен действителен, мы возвращаем информацию о пользователе.
+    Этот маршрут защищен и требует токен администратора.
+    Если токен действителен, мы возвращаем информацию о всех пользователях.
     """
     try:
         users = await crud.get()

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 import enum
 from sqlalchemy import String
 from sqlalchemy.orm import (
