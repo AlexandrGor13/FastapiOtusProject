@@ -1,6 +1,6 @@
 from redis import ConnectionError, Redis
 
-from core.config import settings
+from app.core.config import settings
 
 
 class TokenDict:
@@ -14,7 +14,9 @@ class TokenDict:
     def connect(self):
         """Создаем соединение с Redis"""
         try:
-            connection = Redis(host=self.host, port=self.port, db=self.db, socket_timeout=self.timeout)
+            connection = Redis(
+                host=self.host, port=self.port, db=self.db, socket_timeout=self.timeout
+            )
             connection.ping()  # проверяем доступность сервера
             self.connection = connection
         except Exception as e:
@@ -28,8 +30,10 @@ class TokenDict:
 
     def get_token(self, token):
         value = self.connection.get(token)
-        return value.decode('utf-8') if value else None
+        return value.decode("utf-8") if value else None
 
 
-token_dict = TokenDict(host=settings.redis.host, port=settings.redis.port, db=settings.redis.db)
+token_dict = TokenDict(
+    host=settings.redis.host, port=settings.redis.port, db=settings.redis.db
+)
 token_dict.connect()

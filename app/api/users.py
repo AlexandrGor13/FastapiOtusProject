@@ -4,11 +4,11 @@ from fastapi.responses import JSONResponse
 
 from sqlalchemy.exc import NoResultFound, InterfaceError, IntegrityError
 
-from crud.user import UsersCRUD, users_crud
-from core.schemas.user import User as UserSchema, default_user
-from dependencies.dependencies import get_current_user, get_current_admin
-from crud.profile import ProfileCRUD, profile_crud
-from core.schemas.profile import ProfileRead, default_profile
+from app.crud.user import UsersCRUD, users_crud
+from app.crud.profile import ProfileCRUD, profile_crud
+from app.core.schemas.user import User as UserSchema, default_user
+from app.core.schemas.profile import ProfileRead, default_profile
+from app.dependencies.dependencies import get_current_user, get_current_admin
 
 router = APIRouter(tags=["Users"], prefix="/api/users")
 

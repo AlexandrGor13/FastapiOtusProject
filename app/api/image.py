@@ -4,8 +4,8 @@ import requests  # type: ignore[import]
 from fastapi import APIRouter, File, UploadFile, status, Body, Form, Depends
 from fastapi.responses import StreamingResponse, JSONResponse
 
-from dependencies.dependencies import get_current_user
-from core.config import settings
+from app.dependencies.dependencies import get_current_user
+from app.core.config import settings
 
 router = APIRouter(prefix="/api/image")
 

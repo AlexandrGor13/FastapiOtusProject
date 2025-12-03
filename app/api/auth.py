@@ -1,10 +1,10 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, status, HTTPException
 import logging
-from core.schemas.user import UserAuth
-from core.schemas.token import Token
-from core.security import create_jwt_token
-from dependencies.dependencies import auth_user_oath2, oauth2_scheme, token_dict
+from app.core.schemas.user import UserAuth
+from app.core.schemas.token import Token
+from app.core.security import create_jwt_token
+from app.dependencies.dependencies import auth_user_oath2, oauth2_scheme, token_dict
 
 router = APIRouter(tags=["Authentification"])
 log = logging.getLogger(__name__)

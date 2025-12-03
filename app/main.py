@@ -1,9 +1,8 @@
 import uvicorn
 from fastapi import FastAPI
-from api import router as api_router
-from create_fastapi_app import create_app
-from core.admin import create_admin_panel
-
+from app.api import router as api_router
+from app.create_fastapi_app import create_app
+from app.core.admin import create_admin_panel
 
 
 app: FastAPI = create_app(

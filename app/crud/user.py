@@ -10,13 +10,14 @@ import logging
 from fastapi import Depends
 from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.security import get_password_hash
-from core.schemas.user import UserRead, User as UserSchema, default_user
-from core.models import User as UserModel
-from crud.base_crud import UsersItemsCRUD, get_async_session
+from app.core.security import get_password_hash
+from app.core.schemas.user import UserRead, User as UserSchema, default_user
+from app.core.models import User as UserModel
+from app.crud.base_crud import UsersItemsCRUD, get_async_session
 
 
 log = logging.getLogger(__name__)
+
 
 class UsersCRUD(UsersItemsCRUD):
     async def create(self, user_in: UserSchema) -> UserRead:
@@ -29,7 +30,7 @@ class UsersCRUD(UsersItemsCRUD):
         log.info("Creating user")
         return UserRead(**user_out)
 
-    async def update(self, current_user: str, user_in: UserSchema) -> UserRead:
+    async def update(self, current_user, user_in: UserSchema) -> UserRead:
         params = user_in.model_dump()
         default_params = default_user.model_dump()
         params = {k: w for k, w in params.items() if default_params[k] != w}
@@ -45,14 +46,14 @@ class UsersCRUD(UsersItemsCRUD):
         user_out = await self.get_by_name(current_user)
         return user_out
 
-    async def delete(self, current_user: str) -> UserRead:
+    async def delete(self, current_user) -> UserRead:
         statement = delete(UserModel).where(UserModel.username == current_user)
         user_out = await self.get_by_name(current_user)
         await self.session.execute(statement)
         await self.session.commit()
         return user_out
 
-    async def get_by_name(self, username: str) -> UserRead:
+    async def get_by_name(self, username) -> UserRead:
         statement = select(UserModel).where(UserModel.username == username)
         user_out = (await self.session.scalars(statement)).one().get_schemas
         return UserRead(**user_out)
@@ -66,7 +67,9 @@ class UsersCRUD(UsersItemsCRUD):
         return (await self.session.scalars(statement)).one()
 
     async def get_hash_by_name(self, username: str) -> str:
-        statement = select(UserModel.password_hash).where(UserModel.username == username)
+        statement = select(UserModel.password_hash).where(
+            UserModel.username == username
+        )
         return (await self.session.scalars(statement)).one()
 
     async def get_users_and_passwords(self) -> list:

@@ -7,9 +7,9 @@ Delete
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.models import User as UserModel
 from collections.abc import AsyncGenerator
-from core.models.base import async_session
+from app.core.models.base import async_session
+from app.core.models import User as UserModel
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession]:

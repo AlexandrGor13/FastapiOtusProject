@@ -5,27 +5,28 @@ from fastapi import status, HTTPException, Form, Depends
 from fastapi.security import OAuth2PasswordBearer
 import logging
 
-from core.models.user import RoleEnum
-from core.schemas.user import UserAuth
-from core.security import verify_password, verify_string
-from core.config import settings
-from core.store import token_dict
-from crud.user import UsersCRUD, users_crud
+from app.core.models.user import RoleEnum
+from app.core.schemas.user import UserAuth
+from app.core.security import verify_password, verify_string
+from app.core.config import settings
+from app.core.store import token_dict
+from app.crud.user import UsersCRUD, users_crud
 
 
 log = logging.getLogger(__name__)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
+
 async def auth_user_oath2(
-        credentials: Annotated[UserAuth, Form()],
-        crud: Annotated[UsersCRUD, Depends(users_crud)],
+    credentials: Annotated[UserAuth, Form()],
+    crud: Annotated[UsersCRUD, Depends(users_crud)],
 ):
     """
     Функция для извлечения информации о пользователе из OAuth2PasswordBearer авторизации.
     Проверяем логин и пароль пользователя.
     """
-    AuthData = namedtuple('AuthData', ['username', 'password_hash', 'role'])
+    AuthData = namedtuple("AuthData", ["username", "password_hash", "role"])
     items = list(map(lambda us: AuthData(**us), await crud.get_users_and_passwords()))
     for item in items:
         is_user_ok = verify_string(credentials.username, item.username)

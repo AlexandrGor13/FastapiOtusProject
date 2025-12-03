@@ -10,8 +10,8 @@ from typing import Sequence, Union
 
 from alembic import op
 
-from core.config import settings
-from core.security import get_password_hash
+from app.core.config import settings
+from app.core.security import get_password_hash
 
 
 # revision identifiers, used by Alembic.

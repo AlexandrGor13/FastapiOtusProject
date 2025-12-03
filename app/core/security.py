@@ -3,10 +3,10 @@ from jose import jwt
 import bcrypt
 import secrets
 from passlib.context import CryptContext
-from core.config import settings
+from app.core.config import settings
 
 if not hasattr(bcrypt, "__about__"):
-    bcrypt.__about__ = type("about", (object,), {"__version__": bcrypt.__version__}) # type: ignore[attr-defined]
+    bcrypt.__about__ = type("about", (object,), {"__version__": bcrypt.__version__})  # type: ignore[attr-defined]
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

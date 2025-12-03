@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from core.config import settings
+from app.core.config import settings
 
 from sqlalchemy import (
     MetaData,
@@ -45,8 +45,8 @@ class Base(DeclarativeBase):
             item
             for item in cls.__dict__.keys()
             if not (item[:2] == item[-2:] and item[:2] == "__")
-               and not item.startswith("get")
-               and not item.find("class") >= 0
+            and not item.startswith("get")
+            and not item.find("class") >= 0
         ]
         lst_columns.insert(0, lst_columns.pop(-3))
         return lst_columns

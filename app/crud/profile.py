@@ -10,9 +10,9 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.schemas.profile import Profile, ProfileRead, default_profile
-from core.models import Profile as ProfileModel, User as UserModel
-from crud.base_crud import UsersItemsCRUD, get_async_session
+from app.core.schemas.profile import Profile, ProfileRead, default_profile
+from app.core.models import Profile as ProfileModel, User as UserModel
+from app.crud.base_crud import UsersItemsCRUD, get_async_session
 
 
 class ProfileCRUD(UsersItemsCRUD):
@@ -28,7 +28,7 @@ class ProfileCRUD(UsersItemsCRUD):
         await self.session.commit()
         return Profile(**profile_out)
 
-    async def update(self, current_user: str, profile_in: ProfileRead) -> ProfileRead:
+    async def update(self, current_user, profile_in: ProfileRead) -> ProfileRead:
         params = profile_in.model_dump()
         default_params = default_profile.model_dump()
         params = {k: w for k, w in params.items() if default_params[k] != w}
@@ -41,7 +41,7 @@ class ProfileCRUD(UsersItemsCRUD):
         profile_out = await self.get_by_name(current_user)
         return profile_out
 
-    async def get_by_name(self, username: str) -> ProfileRead:
+    async def get_by_name(self, username) -> ProfileRead:
         statement = (
             select(ProfileModel).join(UserModel).where(UserModel.username == username)
         )
