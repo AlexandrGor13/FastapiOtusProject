@@ -17,9 +17,9 @@ from sqlalchemy.orm import (
 
 async_engine = create_async_engine(
     url=settings.db.async_url,
-    echo=settings.db.echo,
     pool_size=settings.db.pool_size,
     max_overflow=settings.db.max_overflow,
+    future=True,
 )
 
 async_session = async_sessionmaker(

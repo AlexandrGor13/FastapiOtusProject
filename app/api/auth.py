@@ -69,6 +69,6 @@ def protected_route(token: str = Depends(oauth2_scheme)):
     """
     Проверка токена на доступ к ресурсу.
     """
-    if not token_dict.get_token(token):
+    if not token_dict.get_user_by_token(token):
         raise HTTPException(status_code=403, detail="Token has been blacklisted")
     return {"msg": "Access granted"}

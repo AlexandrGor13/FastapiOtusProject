@@ -28,7 +28,7 @@ class TokenDict:
     def del_token(self, token):
         self.connection.delete(token)
 
-    def get_token(self, token):
+    def get_user_by_token(self, token):
         value = self.connection.get(token)
         return value.decode("utf-8") if value else None
 

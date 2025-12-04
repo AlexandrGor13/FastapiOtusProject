@@ -50,9 +50,7 @@ class DatabaseConfig(BaseModel):
     host: str
     port: int = 5432
 
-    echo: bool = False
-    echo_pool: bool = False
-    pool_size: int = 50
+    pool_size: int = 10
     max_overflow: int = 0
 
     naming_convention: dict[str, str] = {

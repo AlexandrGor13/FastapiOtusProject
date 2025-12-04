@@ -32,7 +32,7 @@ ps: ## Просмотр информации о контейнере
 
 .PHONY: test
 test: ## Запуск тестов
-	@pytest test/
+	@uv run pytest -v
 
 .PHONY: check
 check: ## Запуск mypy
