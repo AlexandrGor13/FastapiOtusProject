@@ -1,4 +1,5 @@
 from typing import Annotated
+
 from fastapi import APIRouter, Body, status, Depends
 from fastapi.responses import JSONResponse
 
@@ -8,7 +9,12 @@ from app.crud.user import UsersCRUD, users_crud
 from app.crud.profile import ProfileCRUD, profile_crud
 from app.core.schemas.user import User as UserSchema, default_user
 from app.core.schemas.profile import Profile, default_profile
-from app.dependencies.dependencies import get_current_user, get_current_admin
+from app.dependencies.dependencies import (
+    get_current_user,
+    get_current_admin,
+    oauth2_scheme,
+)
+from app.core.store import token_dict
 
 router = APIRouter(tags=["Users"], prefix="/api/users")
 
@@ -194,6 +200,7 @@ async def update_user_info(
     },
 )
 async def del_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
     current_user: Annotated[dict, Depends(get_current_user)],
     crud_user: Annotated[UsersCRUD, Depends(users_crud)],
     crud_profile: Annotated[ProfileCRUD, Depends(profile_crud)],
@@ -204,6 +211,7 @@ async def del_user(
     try:
         user = (await crud_user.get_by_name(current_user.get("username"))).model_dump()
         await crud_profile.delete(current_user.get("username"))
+        token_dict.del_token(token)
     except NoResultFound:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": "User not found"}

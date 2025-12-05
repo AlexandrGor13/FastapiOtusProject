@@ -53,7 +53,8 @@ def get_current_user(credentials: Annotated[str, Depends(oauth2_scheme)]):
                 detail="Unable to validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        if username not in token_dict.get_user_by_token(credentials):
+        list_users = token_dict.get_user_by_token(credentials)
+        if list_users is None or username not in list_users:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token",
