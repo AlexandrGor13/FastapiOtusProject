@@ -1,19 +1,3 @@
-import pytest
-from unittest.mock import patch
-from fakeredis import FakeStrictRedis
-
-
-# @patch("redis.Redis", new_callable=lambda: FakeStrictRedis)
-@pytest.fixture(scope="module")
-def token_dict():
-    with patch("redis.Redis") as mock_redis:
-        mock_redis.return_value = FakeStrictRedis()
-        from app.core.store import TokenDict
-
-        td = TokenDict(host="localhost", port=6379, db=0)
-        return td
-
-
 def test_token_dict_connect(token_dict):
     token_dict.connect()
     assert token_dict.connection is not None

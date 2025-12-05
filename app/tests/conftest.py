@@ -1,4 +1,7 @@
+import pytest
 import pytest_asyncio
+from unittest.mock import patch
+from fakeredis import FakeStrictRedis
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from app.core.models.base import Base
@@ -26,3 +29,13 @@ async def session(engine):
         yield sess
         await sess.flush()
         await sess.rollback()
+
+
+@pytest.fixture(scope="module")
+def token_dict():
+    with patch("redis.Redis") as mock_redis:
+        mock_redis.return_value = FakeStrictRedis()
+        from app.core.store import TokenDict
+
+        td = TokenDict(host="localhost", port=6379, db=0)
+        return td
