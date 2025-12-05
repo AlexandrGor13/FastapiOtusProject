@@ -27,10 +27,14 @@ def upgrade() -> None:
         f"""
         INSERT INTO users (username, email, password_hash, role)
         VALUES ('{settings.admin.user}', 'admin@admin.admins', '{get_password_hash(settings.admin.password)}', 'admins');
+        INSERT INTO profiles (first_name, last_name, phone, user_id)
+        VALUES ('', '', '+71234445566', '1');
         """
     )
 
 
 def downgrade() -> None:
     # Удаляем нового пользователя
-    op.execute("DELETE FROM users WHERE username = 'admin';")
+    op.execute(
+        "DELETE FROM profiles WHERE user_id = '1'; DELETE FROM users WHERE username = 'admin';"
+    )
