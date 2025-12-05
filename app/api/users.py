@@ -7,7 +7,7 @@ from sqlalchemy.exc import NoResultFound, InterfaceError, IntegrityError
 from app.crud.user import UsersCRUD, users_crud
 from app.crud.profile import ProfileCRUD, profile_crud
 from app.core.schemas.user import User as UserSchema, default_user
-from app.core.schemas.profile import ProfileRead, default_profile
+from app.core.schemas.profile import Profile, default_profile
 from app.dependencies.dependencies import get_current_user, get_current_admin
 
 router = APIRouter(tags=["Users"], prefix="/api/users")
@@ -42,7 +42,7 @@ async def set_user(
     crud_user: Annotated[UsersCRUD, Depends(users_crud)],
     crud_profile: Annotated[ProfileCRUD, Depends(profile_crud)],
     user_in: Annotated[UserSchema, Body()] = default_user,
-    profile_in: Annotated[ProfileRead, Body()] = default_profile,
+    profile_in: Annotated[Profile, Body()] = default_profile,
 ):
     """
     Создание нового пользователя
@@ -195,13 +195,15 @@ async def update_user_info(
 )
 async def del_user(
     current_user: Annotated[dict, Depends(get_current_user)],
-    crud: Annotated[UsersCRUD, Depends(users_crud)],
+    crud_user: Annotated[UsersCRUD, Depends(users_crud)],
+    crud_profile: Annotated[ProfileCRUD, Depends(profile_crud)],
 ):
     """
     Этот маршрут защищен и требует токен. Если токен действителен, мы можем удалить пользователя.
     """
     try:
-        user = await crud.delete(current_user.get("username"))
+        user = (await crud_user.get_by_name(current_user.get("username"))).model_dump()
+        await crud_profile.delete(current_user.get("username"))
     except NoResultFound:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": "User not found"}

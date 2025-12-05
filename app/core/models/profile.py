@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    String, ForeignKey,
+    String,
+    ForeignKey,
 )
 from sqlalchemy.orm import (
     Mapped,
@@ -50,6 +51,3 @@ class Profile(Base):
             "last_name": self.last_name,
             "phone": self.phone,
         }
-
-
-

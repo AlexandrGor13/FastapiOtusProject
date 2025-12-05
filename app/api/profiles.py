@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import NoResultFound, InterfaceError
 
 from app.crud.profile import ProfileCRUD, profile_crud
-from app.core.schemas.profile import ProfileRead, default_profile
+from app.core.schemas.profile import Profile, default_profile
 from app.dependencies.dependencies import get_current_user, get_current_admin
 
 router = APIRouter(tags=["Profile"], prefix="/api/users")
@@ -87,7 +87,7 @@ async def my_profile(
 async def update_my_profile(
     current_user: Annotated[dict, Depends(get_current_user)],
     crud: Annotated[ProfileCRUD, Depends(profile_crud)],
-    profile_in: Annotated[ProfileRead, Body()] = default_profile,
+    profile_in: Annotated[Profile, Body()] = default_profile,
 ):
     """
     Этот маршрут защищен и требует токен. Если токен действителен, мы можем изменить профиль пользователя.
