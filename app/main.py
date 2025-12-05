@@ -1,4 +1,3 @@
-import uvicorn
 from fastapi import FastAPI
 from app.api import router as api_router
 from app.create_fastapi_app import create_app
@@ -12,6 +11,8 @@ app.include_router(api_router)
 create_admin_panel(app)
 
 if __name__ == "__main__":
+    import uvicorn
+
     uvicorn.run(
         "main:app",
         reload=True,
