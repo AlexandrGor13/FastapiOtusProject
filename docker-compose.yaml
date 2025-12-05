@@ -46,7 +46,7 @@ services:
       context: .
     command:
       - gunicorn
-      - main:app
+      - app.main:app
       - --timeout
       - "2000"
       - --workers

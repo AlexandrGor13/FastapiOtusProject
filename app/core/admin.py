@@ -3,16 +3,16 @@ from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
 from fastapi.requests import Request
 import uuid
-from api import router
-from core.models.base import async_session
-from core.models.user import RoleEnum
-from core.security import verify_password
-from core.models import (
+from app.api import router
+from app.core.models.base import async_session
+from app.core.models.user import RoleEnum
+from app.core.security import verify_password
+from app.core.models import (
     User,
     Profile,
     async_engine,
 )
-from crud.user import UsersCRUD
+from app.crud.user import UsersCRUD
 
 
 def create_admin_panel(app: FastAPI):

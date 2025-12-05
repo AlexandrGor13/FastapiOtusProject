@@ -1,6 +1,6 @@
 from typing import Annotated
 from io import BytesIO
-import requests  # type: ignore[import]
+import httpx
 from fastapi import APIRouter, File, UploadFile, status, Body, Form, Depends
 from fastapi.responses import StreamingResponse, JSONResponse
 
@@ -56,12 +56,12 @@ async def recognize_face(file: UploadFile = File(...)):
         )
     try:
         image_bytes = await file.read()
-
-        response = requests.post(
-            f"http://{settings.api.deepface_host}:{settings.api.deepface_port}/recognize-face",
-            files={"file": (file.filename, image_bytes)},
-        )
-
+        async with httpx.AsyncClient() as client:  # Используем асинхронный клиент httpx
+            response = await client.post(
+                f"http://{settings.api.deepface_host}:{settings.api.deepface_port}/recognize-face",
+                files={"file": (file.filename, image_bytes)},
+                timeout=None,
+            )
         if response.status_code != 200:
             return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -124,14 +124,16 @@ async def compare_faces(
     try:
         image_bytes1 = await file1.read()
         image_bytes2 = await file2.read()
-        response = requests.post(
-            f"http://{settings.api.deepface_host}:{settings.api.deepface_port}/compare-faces",
-            files={
-                "file1": (file1.filename, image_bytes1),
-                "file2": (file2.filename, image_bytes2),
-            },
-            params={"model_name": model_name},
-        )
+        async with httpx.AsyncClient() as client:  # Используем асинхронный клиент httpx
+            response = await client.post(
+                f"http://{settings.api.deepface_host}:{settings.api.deepface_port}/compare-faces",
+                files={
+                    "file1": (file1.filename, image_bytes1),
+                    "file2": (file2.filename, image_bytes2),
+                },
+                params={"model_name": model_name},
+                timeout=None,
+            )
 
         if response.status_code != 200:
             return JSONResponse(
@@ -177,11 +179,12 @@ async def count_people(file: UploadFile = File(...)):
         )
     try:
         image_bytes = await file.read()
-        response = requests.post(
-            f"http://{settings.api.deepface_host}:{settings.api.deepface_port}/count-people",
-            files={"file": (file.filename, image_bytes)},
-        )
-
+        async with httpx.AsyncClient() as client:  # Используем асинхронный клиент httpx
+            response = await client.post(
+                f"http://{settings.api.deepface_host}:{settings.api.deepface_port}/count-people",
+                files={"file": (file.filename, image_bytes)},
+                timeout=None,
+            )
         if response.status_code != 200:
             return JSONResponse(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -211,29 +214,29 @@ async def generate_image(prompt: str = Form(..., max_length=60)):
     """
 
     try:
-        response = requests.post(
+        buffer = BytesIO()
+        with httpx.stream(
+            "POST",
             f"http://{settings.api.kandinsky_host}:{settings.api.kandinsky_port}/generate_image",
             data={"prompt": prompt},
-            stream=True,
-        )
-        response.raise_for_status()
-        if response.status_code == 200:
-            buffer = BytesIO()
-            for chunk in response.iter_content(chunk_size=8192):
+            timeout=None,
+        ) as response:
+            response.raise_for_status()
+            for chunk in response.iter_bytes():
                 if chunk:
                     buffer.write(chunk)
             buffer.seek(0)
             return StreamingResponse(buffer, media_type="image/png")
-        else:
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR:
             return JSONResponse(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status_code=e.response.status_code,
                 content={
-                    "error": f"Ошибка обработки изображения внешним сервисом ({response.status_code})"
+                    "error": f"Ошибка обработки изображения внешним сервисом ({e.response.status_code})"
                 },
             )
-    except Exception as e:
         return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=e.response.status_code,
             content={"error": str(e)},
         )
 
@@ -262,29 +265,29 @@ async def generate_avatar(file: UploadFile = File(...)):
     prompt = "стиль анимации, уникальный, добрый"
     try:
         image_bytes = await file.read()
-        response = requests.post(
+        buffer = BytesIO()
+        with httpx.stream(
+            "POST",
             f"http://{settings.api.kandinsky_host}:{settings.api.kandinsky_port}/generate_avatar",
             files={"file": (file.filename, image_bytes)},
             data={"prompt": prompt},
-            stream=True,
-        )
-        response.raise_for_status()
-        if response.status_code == 200:
-            buffer = BytesIO()
-            for chunk in response.iter_content(chunk_size=8192):
+            timeout=None,
+        ) as response:
+            response.raise_for_status()
+            for chunk in response.iter_bytes():
                 if chunk:
                     buffer.write(chunk)
             buffer.seek(0)
             return StreamingResponse(buffer, media_type="image/png")
-        else:
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR:
             return JSONResponse(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status_code=e.response.status_code,
                 content={
-                    "error": f"Ошибка обработки изображения внешним сервисом ({response.status_code})"
+                    "error": f"Ошибка обработки изображения внешним сервисом ({e.response.status_code})"
                 },
             )
-    except Exception as e:
         return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=e.response.status_code,
             content={"error": str(e)},
         )
