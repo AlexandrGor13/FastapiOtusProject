@@ -1,6 +1,10 @@
+import unittest
+
 import pytest
 import pytest_asyncio
 from unittest.mock import patch
+
+from fastapi.testclient import TestClient
 from fakeredis import FakeStrictRedis
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
@@ -14,6 +18,7 @@ async def engine():
     """Создаем асинхронный движок подключения к базе данных"""
     engine = create_async_engine(DB_URL, future=True)
     async with engine.begin() as conn:
+
         await conn.run_sync(Base.metadata.create_all)
     yield engine
     await engine.dispose()
@@ -33,9 +38,28 @@ async def session(engine):
 
 @pytest.fixture(scope="module")
 def token_dict():
+    """
+    Создаем фикстуру для тестирования хранилища токенов
+    """
     with patch("redis.Redis") as mock_redis:
         mock_redis.return_value = FakeStrictRedis()
         from app.core.store import TokenDict
 
         td = TokenDict(host="localhost", port=6379, db=0)
         return td
+
+
+@pytest.fixture
+def test_app_mock_db(session):
+    """Создаем TestClient и моделируем базу данных."""
+    from app.main import app
+    from app.crud.base_crud import get_async_session
+
+    app.dependency_overrides[get_async_session] = lambda: unittest.mock.MagicMock(
+        session
+    )
+    with TestClient(app) as client:
+        yield client
+
+    # remove the mock at the end of the test
+    del app.dependency_overrides[get_async_session]
