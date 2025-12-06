@@ -26,7 +26,7 @@ def get_password_hash(password: str):
     return pwd_context.hash(password)
 
 
-def create_jwt_token(data: dict):
+def create_jwt_token(data: dict) -> str:
     """
     Функция для создания JWT токена.
     Мы копируем входные данные, добавляем время истечения и кодируем токен.
@@ -34,4 +34,6 @@ def create_jwt_token(data: dict):
     payload = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.token_timeout)
     payload.update({"exp": expire})
-    return jwt.encode(claims=payload, key=settings.api.secret_key, algorithm="HS256")
+    return str(
+        jwt.encode(claims=payload, key=settings.api.secret_key, algorithm="HS256")
+    )

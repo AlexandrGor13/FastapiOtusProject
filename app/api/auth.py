@@ -1,7 +1,6 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, status, HTTPException
 import logging
-from app.core.schemas.user import UserAuth
 from app.core.schemas.token import Token
 from app.core.security import create_jwt_token
 from app.dependencies.dependencies import auth_user_oath2, oauth2_scheme, token_dict
@@ -29,14 +28,16 @@ log = logging.getLogger(__name__)
     },
 )
 def login(
-    user_in: Annotated[UserAuth, Depends(auth_user_oath2)],
+    user_in: Annotated[dict, Depends(auth_user_oath2)],
 ) -> Token:
     """
     Авторизация пользователя. В случае успеха возвращает токен доступа
     """
-    token = create_jwt_token({"sub": user_in.username, "role": user_in.role})
-    token_dict.add_token(token=token, username=user_in.username)
-    log.info("Login username %s", user_in.username)
+    token = create_jwt_token(
+        {"sub": user_in.get("username"), "role": user_in.get("role")}
+    )
+    token_dict.add_token(token=token, username=str(user_in.get("username")))
+    log.info("Login username %s", user_in.get("username"))
     return Token(access_token=token, token_type="bearer")
 
 

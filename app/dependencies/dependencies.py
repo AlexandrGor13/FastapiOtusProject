@@ -1,4 +1,3 @@
-from collections import namedtuple
 from typing import Annotated
 from jose import jwt, JWTError, ExpiredSignatureError
 from fastapi import status, HTTPException, Form, Depends
@@ -26,11 +25,10 @@ async def auth_user_oath2(
     Функция для извлечения информации о пользователе из OAuth2PasswordBearer авторизации.
     Проверяем логин и пароль пользователя.
     """
-    AuthData = namedtuple("AuthData", ["username", "password_hash", "role"])
-    items = list(map(lambda us: AuthData(**us), await crud.get_users_and_passwords()))
+    items = await crud.get_users_and_passwords()
     for item in items:
-        is_user_ok = verify_string(credentials.username, item.username)
-        is_pass_ok = verify_password(credentials.password, item.password_hash)
+        is_user_ok = verify_string(credentials.username, item.get("username"))
+        is_pass_ok = verify_password(credentials.password, item.get("password_hash"))
         if is_user_ok and is_pass_ok:
             return item
     else:

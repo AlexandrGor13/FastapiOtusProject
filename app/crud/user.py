@@ -5,6 +5,7 @@ Update
 Delete
 """
 
+import asyncio
 from typing import Annotated
 import logging
 from fastapi import Depends
@@ -76,7 +77,8 @@ class UsersCRUD(UsersItemsCRUD):
         users_list = []
         statement = select(UserModel).order_by(UserModel.id)
         users = await self.session.scalars(statement)
-        for user in users.all():
+        await asyncio.sleep(0)
+        for user in users:
             users_list.append(user.get_username_password)
         return users_list
 
@@ -84,6 +86,7 @@ class UsersCRUD(UsersItemsCRUD):
         users_list = []
         statement = select(UserModel).order_by(UserModel.id)
         users = await self.session.scalars(statement)
+        await asyncio.sleep(0)
         for user in users.all():
             users_list.append(user.get_schemas)
         log.info("Get all users")

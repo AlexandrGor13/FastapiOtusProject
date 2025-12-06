@@ -8,14 +8,15 @@ from sqlalchemy.orm import (
 )
 
 from .base import Base
-# from api.schemas.user import UserRead
 
 if TYPE_CHECKING:
     from .profile import Profile
 
+
 class RoleEnum(str, enum.Enum):
     admins = "admins"
     users = "users"
+
 
 class User(Base):
     __tablename__ = "users"
@@ -38,6 +39,8 @@ class User(Base):
 
     @property
     def get_username_password(self) -> dict:
-        return {"username": self.username, "password_hash": self.password_hash, "role": self.role}
-
-
+        return {
+            "username": self.username,
+            "password_hash": self.password_hash,
+            "role": self.role,
+        }

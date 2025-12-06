@@ -5,6 +5,7 @@ Update
 Delete
 """
 
+import asyncio
 from typing import Annotated
 
 from fastapi import Depends
@@ -57,6 +58,7 @@ class ProfileCRUD(UsersItemsCRUD):
         profile_list = []
         statement = select(ProfileModel).order_by(ProfileModel.id)
         profiles = await self.session.scalars(statement)
+        await asyncio.sleep(0)
         for profile in profiles:
             profile_list.append(profile.get_schemas)
         return profile_list
