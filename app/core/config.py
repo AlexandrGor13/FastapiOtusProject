@@ -76,7 +76,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         case_sensitive=False,
         env_nested_delimiter="__",
-        env_file=(BASE_DIR / ".env"),
+        env_file=(BASE_DIR / ".env", BASE_DIR / ".env.template"),
     )
 
     redis: RedisConfig = RedisConfig()
