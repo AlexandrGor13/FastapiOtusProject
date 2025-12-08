@@ -9,6 +9,7 @@ from fakeredis import FakeStrictRedis
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
 from app.core.models.base import Base
+from app.core.security import create_jwt_token, get_password_hash
 
 DB_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -49,9 +50,29 @@ def token_dict():
         return td
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
+def new_token(token_dict):
+    """
+    Создаем новый токен
+    """
+    token_dict.connect()
+    item = {
+        "username": "test_user",
+        "password": "password",
+        "email": "test_user@example.com",
+        "role": "users",
+    }
+    item["password_hash"] = get_password_hash(item.pop("password"))
+    token = create_jwt_token({"sub": item.get("username"), "role": item.get("role")})
+    token_dict.add_token(token=token, username=item.get("username"))
+    return token, item
+
+
+@pytest.fixture(scope="function")
 def test_app_mock_db(session):
-    """Создаем TestClient и моделируем базу данных."""
+    """
+    Создаем TestClient и моделируем базу данных.
+    """
     from app.main import app
     from app.crud.base_crud import get_async_session
 
