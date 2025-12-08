@@ -14,7 +14,7 @@ class RedisConfig(BaseModel):
     """
 
     db: int = 0
-    host: str
+    host: str = "localhost"
     port: int = 6379
 
 
@@ -23,10 +23,10 @@ class ApiConfig(BaseModel):
     Setting for the API
     """
 
-    secret_key: str
-    kandinsky_host: str
+    secret_key: str = "my_secret_key"
+    kandinsky_host: str = "kandinsky"
     kandinsky_port: int = 8001
-    deepface_host: str
+    deepface_host: str = "deepface"
     deepface_port: int = 8002
 
 
@@ -35,8 +35,8 @@ class AdminConfig(BaseModel):
     Setting for the AdminPanel
     """
 
-    user: str
-    password: str
+    user: str = "admin"
+    password: str = "password"
 
 
 class DatabaseConfig(BaseModel):
@@ -44,10 +44,10 @@ class DatabaseConfig(BaseModel):
     Setting for the PostgreSQL database
     """
 
-    name: str
-    user: str
-    password: str
-    host: str
+    name: str = "postgres"
+    user: str = "postgres"
+    password: str = "password"
+    host: str = "localhost"
     port: int = 5432
 
     pool_size: int = 10
