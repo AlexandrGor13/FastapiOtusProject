@@ -79,10 +79,10 @@ class Settings(BaseSettings):
         env_file=(BASE_DIR / ".env"),
     )
 
-    redis: RedisConfig
-    db: DatabaseConfig
-    admin: AdminConfig
-    api: ApiConfig
+    redis: RedisConfig = RedisConfig()
+    db: DatabaseConfig = DatabaseConfig()
+    admin: AdminConfig = AdminConfig()
+    api: ApiConfig = ApiConfig()
     token_timeout: int = 600
 
 
