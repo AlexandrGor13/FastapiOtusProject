@@ -60,10 +60,10 @@ services:
         condition: service_started
       pg:
         condition: service_healthy
-      deepface:
-        condition: service_started
-      kandinsky:
-        condition: service_started
+#      deepface:
+#        condition: service_started
+#      kandinsky:
+#        condition: service_started
 
 volumes:
   postgresdata:
