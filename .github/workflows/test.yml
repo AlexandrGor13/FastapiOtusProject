@@ -20,6 +20,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install uv
         uv add pytest
+    - name: Load environment variables from .env file
+      run: echo "$(cat ./.env.template)" >> $GITHUB_ENV
     - name: Run Tests
       run: |
         uv run pytest
