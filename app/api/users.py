@@ -29,7 +29,7 @@ router = APIRouter(tags=["Users"], prefix="/api/users")
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "User created",
+                        "description": "User created",
                         "user info": {
                             "username": "string",
                             "email": "user@example.com",
@@ -38,9 +38,9 @@ router = APIRouter(tags=["Users"], prefix="/api/users")
                 }
             },
         },
-        status.HTTP_409_CONFLICT: {"description": "User already exists"},
+        status.HTTP_409_CONFLICT: {"detail": "User already exists"},
         status.HTTP_500_INTERNAL_SERVER_ERROR: {
-            "description": "Server Error",
+            "detail": "Server Error",
         },
     },
 )
@@ -79,7 +79,7 @@ async def set_user(
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "User info",
+                        "description": "User info",
                         "user info": {
                             "username": "string",
                             "email": "user@example.com",
@@ -89,10 +89,10 @@ async def set_user(
             },
         },
         status.HTTP_404_NOT_FOUND: {
-            "description": "User not found",
+            "detail": "User not found",
         },
         status.HTTP_500_INTERNAL_SERVER_ERROR: {
-            "description": "Server Error",
+            "detail": "Server Error",
         },
     },
 )
@@ -130,7 +130,7 @@ async def about_me(
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "User updated",
+                        "description": "User updated",
                         "user info": {
                             "username": "string",
                             "email": "user@example.com",
@@ -140,10 +140,10 @@ async def about_me(
             },
         },
         status.HTTP_404_NOT_FOUND: {
-            "description": "User not found",
+            "detail": "User not found",
         },
         status.HTTP_500_INTERNAL_SERVER_ERROR: {
-            "description": "Server Error",
+            "detail": "Server Error",
         },
     },
 )
@@ -182,7 +182,7 @@ async def update_user_info(
             "content": {
                 "application/json": {
                     "example": {
-                        "detail": "User deleted",
+                        "description": "User deleted",
                         "user info": {
                             "username": "string",
                             "email": "user@example.com",
@@ -192,10 +192,10 @@ async def update_user_info(
             },
         },
         status.HTTP_404_NOT_FOUND: {
-            "description": "User not found",
+            "detail": "User not found",
         },
         status.HTTP_500_INTERNAL_SERVER_ERROR: {
-            "description": "Server Error",
+            "detail": "Server Error",
         },
     },
 )
