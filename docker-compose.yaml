@@ -2,9 +2,9 @@ services:
   pg:
     image: postgres:18
     environment:
-      POSTGRES_DB: ${DB__NAME}
-      POSTGRES_USER: ${DB__USER}
-      POSTGRES_PASSWORD: ${DB__PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgresdata:/var/lib/postgresql/data/pgdata
@@ -27,7 +27,7 @@ services:
       dockerfile: Dockerfile
       context: ./api_deepface
     expose:
-        - ${API__DEEPFACE_PORT}
+        - ${API_DEEPFACE_PORT}
 
 
   kandinsky:
@@ -35,7 +35,7 @@ services:
       dockerfile: Dockerfile
       context: ./api_kandinsky
     expose:
-        - ${API__KANDINSKY_PORT}
+        - ${API_KANDINSKY_PORT}
 
 
   app:
@@ -60,10 +60,10 @@ services:
         condition: service_started
       pg:
         condition: service_healthy
-      deepface:
-        condition: service_started
-      kandinsky:
-        condition: service_started
+#      deepface:
+#        condition: service_started
+#      kandinsky:
+#        condition: service_started
 
 volumes:
   postgresdata:

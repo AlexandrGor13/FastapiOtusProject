@@ -1,28 +1,42 @@
+import os
 from pathlib import Path
 
-from pydantic import BaseModel, PostgresDsn
+from dotenv import load_dotenv
+from pydantic import PostgresDsn, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+load_dotenv()
+
+env = os.getenv("ENV_STATE")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SQLA_PG_ASYNC_ENGINE = "asyncpg"
 
 
-class RedisConfig(BaseModel):
+class ConfigBase(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=BASE_DIR / f".env.{env}", env_file_encoding="utf-8", extra="ignore"
+    )
+
+
+class RedisConfig(ConfigBase):
     """
     Setting for Redis
     """
 
-    db: int
+    model_config = SettingsConfigDict(env_prefix="redis_")
+    db: int = 0
     host: str
     port: int
 
 
-class ApiConfig(BaseModel):
+class ApiConfig(ConfigBase):
     """
     Setting for the API
     """
 
+    model_config = SettingsConfigDict(env_prefix="api_")
     secret_key: str
     kandinsky_host: str
     kandinsky_port: int
@@ -30,20 +44,22 @@ class ApiConfig(BaseModel):
     deepface_port: int
 
 
-class AdminConfig(BaseModel):
+class AdminConfig(ConfigBase):
     """
     Setting for the AdminPanel
     """
 
+    model_config = SettingsConfigDict(env_prefix="admin_")
     user: str
     password: str
 
 
-class DatabaseConfig(BaseModel):
+class DatabaseConfig(ConfigBase):
     """
     Setting for the PostgreSQL database
     """
 
+    model_config = SettingsConfigDict(env_prefix="db_")
     name: str
     user: str
     password: str
@@ -75,14 +91,13 @@ class DatabaseConfig(BaseModel):
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         case_sensitive=False,
-        env_nested_delimiter="__",
-        env_file=(BASE_DIR / ".env", BASE_DIR / ".env.template"),
+        env_file=(BASE_DIR / ".env.prod"),
     )
 
-    redis: RedisConfig = RedisConfig()
-    db: DatabaseConfig = DatabaseConfig()
-    admin: AdminConfig = AdminConfig()
-    api: ApiConfig = ApiConfig()
+    redis: RedisConfig = Field(default_factory=RedisConfig)
+    db: DatabaseConfig = Field(default_factory=DatabaseConfig)
+    admin: AdminConfig = Field(default_factory=AdminConfig)
+    api: ApiConfig = Field(default_factory=ApiConfig)
     token_timeout: int = 600
 
 
